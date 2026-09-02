@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ivory: #f7f3e8;
+    --ivory-deep: #efe7d3;
+    --parchment: #fdfaf3;
+    --maroon: #7a1b2e;
+    --maroon-deep: #4e101c;
+    --gold: #b38528;
+    --gold-light: #dfba6b;
+    --gold-glow: #f3d790;
+    --night: #0e172e;
+    --night-deep: #070d1d;
+    --night-accent: #19274e;
+    --sage: #5b6840;
+    --blush: #b97a77;
+    --ink: #2b221a;
+  }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    background-color: var(--ivory);
+    color: var(--ink);
+    overflow-x: hidden;
+    margin: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar for Chrome, Safari, Edge, Opera, and all WebKit browsers */
+  ::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+    height: 0px;
+    background: transparent;
+  }
+
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+    height: 0px;
+    background: transparent;
+  }
+}
+
+.font-arabic {
+  font-family: 'Amiri', serif;
+}
+
+.font-script {
+  font-family: 'Tangerine', cursive;
+}
+
+.font-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-sans-ui {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* Lantern animation */
+@keyframes lanternSwayLeft {
+  0%, 100% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(-4deg);
+  }
+}
+
+@keyframes lanternSwayRight {
+  0%, 100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes lanternFlame {
+  0%, 100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 16px rgba(255, 196, 77, 0.75)) brightness(1);
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 28px rgba(255, 210, 110, 0.95)) brightness(1.15);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 168, 77, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(212, 168, 77, 0.55);
+  }
+}
+
+.animate-sway-left {
+  animation: lanternSwayLeft 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.animate-sway-right {
+  animation: lanternSwayRight 7s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.animate-flame {
+  animation: lanternFlame 3s ease-in-out infinite;
+}
+
+.animate-star {
+  animation: starTwinkle 3.5s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Islamic pattern background utilities */
+.bg-arabesque-pattern {
+  background-image: radial-gradient(rgba(180, 133, 40, 0.12) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.bg-stars-pattern {
+  background-image: radial-gradient(rgba(245, 226, 175, 0.3) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+

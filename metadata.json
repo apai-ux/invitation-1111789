@@ -1,0 +1,6 @@
+{
+  "name": "Fathima & Anas — Nikah Invitation",
+  "description": "Sacred Nikah wedding invitation for Dr. Fathima Azis & Anas Kunjumuhammed with ceremony countdown, venue map directions, and Islamic aesthetics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
