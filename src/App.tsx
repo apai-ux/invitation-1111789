@@ -22,6 +22,7 @@ import { ArabesqueDivider } from './components/ArabesqueDivider';
 import { CountdownTimer } from './components/CountdownTimer';
 import { DuaBlessingWall } from './components/DuaBlessingWall';
 import { AudioPlayer } from './components/AudioPlayer';
+import { RSVPAdminModal } from './components/RSVPAdminModal';
 
 // Generated imagery & QR vector assets
 import mapBgImg from './assets/images/map_background_1788368499902.jpg';
@@ -32,6 +33,7 @@ const MAPS_URL = 'https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw';
 export default function App() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [sharedToast, setSharedToast] = useState(false);
+  const [isRSVPModalOpen, setIsRSVPModalOpen] = useState(false);
 
   // Generate random static stars for the night sky sections
   const heroStars = useMemo(() => {
@@ -641,23 +643,42 @@ export default function App() {
             Sunday · 22 November 2026 · Thodupuzha &amp; Ernakulam
           </div>
 
-          <div className="mt-10 pt-6 border-t border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-400 font-sans-ui">
+          <div className="mt-8 pt-6 border-t border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-400 font-sans-ui">
             <div className="flex items-center gap-1.5">
               <span>May Allah bless this union with eternal joy</span>
               <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />
             </div>
-            <a
-              href={MAPS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1"
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Google Maps Venue Link</span>
-            </a>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setIsRSVPModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 text-xs transition-colors cursor-pointer"
+                title="View guest responses and database table"
+              >
+                <span>📋</span>
+                <span>View Guest RSVP Table</span>
+              </button>
+
+              <a
+                href={MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Google Maps Venue Link</span>
+              </a>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Guest RSVP & Wishes Registry Modal (Host / Couple view) */}
+      <RSVPAdminModal
+        isOpen={isRSVPModalOpen}
+        onClose={() => setIsRSVPModalOpen(false)}
+      />
     </div>
   );
 }
