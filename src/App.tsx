@@ -22,7 +22,6 @@ import { ArabesqueDivider } from './components/ArabesqueDivider';
 import { CountdownTimer } from './components/CountdownTimer';
 import { DuaBlessingWall } from './components/DuaBlessingWall';
 import { AudioPlayer } from './components/AudioPlayer';
-import { AdminDashboard } from './components/AdminDashboard';
 
 // Generated imagery & QR vector assets
 import mapBgImg from './assets/images/map_background_1788368499902.jpg';
@@ -33,59 +32,6 @@ const MAPS_URL = 'https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw';
 export default function App() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [sharedToast, setSharedToast] = useState(false);
-
-  // Secret Admin URL route detection (/admin-dashboard or ?admin=true or #admin)
-  const [isAdminRoute, setIsAdminRoute] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const path = window.location.pathname.toLowerCase();
-    const search = window.location.search.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
-    return (
-      path === '/admin-dashboard' ||
-      path.startsWith('/admin-dashboard') ||
-      search.includes('admin=true') ||
-      search.includes('admin=1') ||
-      hash === '#admin' ||
-      hash === '#admin-dashboard'
-    );
-  });
-
-  useEffect(() => {
-    const handleLocationCheck = () => {
-      const path = window.location.pathname.toLowerCase();
-      const search = window.location.search.toLowerCase();
-      const hash = window.location.hash.toLowerCase();
-      setIsAdminRoute(
-        path === '/admin-dashboard' ||
-        path.startsWith('/admin-dashboard') ||
-        search.includes('admin=true') ||
-        search.includes('admin=1') ||
-        hash === '#admin' ||
-        hash === '#admin-dashboard'
-      );
-    };
-
-    window.addEventListener('popstate', handleLocationCheck);
-    window.addEventListener('hashchange', handleLocationCheck);
-    return () => {
-      window.removeEventListener('popstate', handleLocationCheck);
-      window.removeEventListener('hashchange', handleLocationCheck);
-    };
-  }, []);
-
-  const handleBackToInvitation = () => {
-    if (window.history.pushState) {
-      window.history.pushState({}, '', '/');
-    } else {
-      window.location.href = '/';
-    }
-    setIsAdminRoute(false);
-  };
-
-  // If secret admin URL is accessed, render the Private Admin Dashboard
-  if (isAdminRoute) {
-    return <AdminDashboard onBackToInvitation={handleBackToInvitation} />;
-  }
 
   // Generate random static stars for the night sky sections
   const heroStars = useMemo(() => {
