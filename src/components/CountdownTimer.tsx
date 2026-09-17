@@ -20,20 +20,30 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
   const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
   const [hasClickedInSession, setHasClickedInSession] = useState(false);
 
-  const handleAttendanceSelect = (choice: 'yes' | 'no') => {
+  const handleAttendanceSelect = async (choice: 'yes' | 'no') => {
+    // Anti-spam lock: completely block subsequent clicks once a choice has been made
+    if (attendance !== null) return;
+
     setAttendance(choice);
     setHasClickedInSession(true);
     try {
       localStorage.setItem('wedding_rsvp_attendance', choice);
     } catch {}
 
-    // Immediately record submission without prompting the user
-    submitRSVP({
-      attendance: choice,
-      name: 'Anonymous RSVP',
-    }).catch((err) => {
-      console.warn('RSVP submission note:', err);
-    });
+    // Immediately record submission and log full server response
+    try {
+      const res = await submitRSVP({
+        attendance: choice,
+        name: 'Anonymous RSVP',
+      });
+      if (!res.success) {
+        console.error('RSVP SUBMISSION FAILED:', res.error);
+      } else {
+        console.log('RSVP SUBMISSION SUCCESS:', res.data);
+      }
+    } catch (err) {
+      console.error('RSVP SUBMISSION EXCEPTION:', err);
+    }
   };
 
   const [copiedCalendar, setCopiedCalendar] = useState(false);
@@ -206,34 +216,40 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
         </h4>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-lg">
-          {/* Option 1: Yes, with joy! */}
-          <button
-            type="button"
-            onClick={() => handleAttendanceSelect('yes')}
-            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full border-2 transition-all duration-200 text-sm sm:text-base font-sans-ui active:scale-95 cursor-pointer shadow-sm ${
-              attendance === 'yes'
-                ? 'bg-[#7a1228] text-white border-[#7a1228] shadow-md ring-4 ring-[#7a1228]/20 font-semibold'
-                : 'bg-white hover:bg-rose-50/70 text-[#7a1228] border-[#7a1228] hover:border-[#5c0d1e]'
-            }`}
-          >
-            <span className="font-bold text-base">✓</span>
-            <span>Yes, with joy!</span>
-            <span className="text-lg leading-none">😊</span>
-          </button>
+          {/* Option 1: Yes, with joy! - instantly hides Option 2 when clicked; locked once clicked */}
+          {(attendance === null || attendance === 'yes') && (
+            <button
+              type="button"
+              disabled={attendance !== null}
+              onClick={() => handleAttendanceSelect('yes')}
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full border-2 transition-all duration-200 text-sm sm:text-base font-sans-ui shadow-sm ${
+                attendance === 'yes'
+                  ? 'bg-[#7a1228] text-white border-[#7a1228] shadow-md ring-4 ring-[#7a1228]/20 font-semibold cursor-default opacity-95 pointer-events-none'
+                  : 'bg-white hover:bg-rose-50/70 text-[#7a1228] border-[#7a1228] hover:border-[#5c0d1e] active:scale-95 cursor-pointer'
+              }`}
+            >
+              <span className="font-bold text-base">✓</span>
+              <span>Yes, with joy!</span>
+              <span className="text-lg leading-none">😊</span>
+            </button>
+          )}
 
-          {/* Option 2: Sorry, I can't make it */}
-          <button
-            type="button"
-            onClick={() => handleAttendanceSelect('no')}
-            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full border-2 transition-all duration-200 text-sm sm:text-base font-sans-ui italic active:scale-95 cursor-pointer shadow-sm ${
-              attendance === 'no'
-                ? 'bg-[#c24b5a] text-white border-[#c24b5a] shadow-md ring-4 ring-[#c24b5a]/20 font-medium not-italic'
-                : 'bg-white hover:bg-rose-50/50 text-[#c24b5a] border-[#f2c7ce] hover:border-[#e2a4ad]'
-            }`}
-          >
-            <span className="not-italic font-bold text-base">✕</span>
-            <span>Sorry, I can&apos;t make it</span>
-          </button>
+          {/* Option 2: Sorry, I can't make it - instantly hides Option 1 when clicked; locked once clicked */}
+          {(attendance === null || attendance === 'no') && (
+            <button
+              type="button"
+              disabled={attendance !== null}
+              onClick={() => handleAttendanceSelect('no')}
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 rounded-full border-2 transition-all duration-200 text-sm sm:text-base font-sans-ui shadow-sm ${
+                attendance === 'no'
+                  ? 'bg-[#c24b5a] text-white border-[#c24b5a] shadow-md ring-4 ring-[#c24b5a]/20 font-medium not-italic cursor-default opacity-95 pointer-events-none'
+                  : 'bg-white hover:bg-rose-50/50 text-[#c24b5a] border-[#f2c7ce] hover:border-[#e2a4ad] italic active:scale-95 cursor-pointer'
+              }`}
+            >
+              <span className="not-italic font-bold text-base">✕</span>
+              <span>Sorry, I can&apos;t make it</span>
+            </button>
+          )}
         </div>
 
         {/* Simple, elegant confirmation message - strictly only shown AFTER user clicks */}

@@ -86,13 +86,18 @@ export const DuaBlessingWall: React.FC<{ className?: string }> = ({ className = 
 
     // Save to dedicated 'blessings' table in Supabase
     try {
-      await submitBlessing({
+      const res = await submitBlessing({
         name: submittedName,
         relation: submittedRelation,
         dua: message,
       });
+      if (!res.success) {
+        console.error('BLESSING SUBMISSION FAILED:', res.error);
+      } else {
+        console.log('BLESSING SUBMISSION SUCCESS:', res.data);
+      }
     } catch (err) {
-      console.warn('Blessing submission note:', err);
+      console.error('BLESSING SUBMISSION EXCEPTION:', err);
     } finally {
       setIsSubmitting(false);
       setSubmitted(true);

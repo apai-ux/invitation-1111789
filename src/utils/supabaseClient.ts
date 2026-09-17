@@ -136,16 +136,15 @@ export const submitRSVP = async (
           relation: newRecord.relation,
           wishes: newRecord.wishes,
         },
-      ])
-      .select()
-      .single();
+      ]);
 
     if (error) {
-      console.warn('Supabase insert warning:', error);
+      console.error("DATABASE INSERTION FAILED:", error.message, error.details, error.hint);
       return { success: false, error: error.message };
+    } else {
+      console.log("DATABASE INSERTION SUCCESS:", data);
+      return { success: true, data: newRecord };
     }
-
-    return { success: true, data: data as RSVPRecord };
   } catch (err: any) {
     console.error('Supabase exception:', err);
     return { success: false, error: err?.message || 'Failed to submit RSVP' };
@@ -233,27 +232,51 @@ export const submitBlessing = async (
   }
 
   try {
-    const insertPayload: Record<string, any> = {
-      name: newBlessing.name,
+    // 1. Try with user's table schema columns: (guest_name, relation, attendance, blessing_text)
+    const primaryPayload: Record<string, any> = {
+      guest_name: newBlessing.name,
       relation: newBlessing.relation,
-      dua: newBlessing.dua,
+      blessing_text: newBlessing.dua,
     };
     if (newBlessing.attendance) {
-      insertPayload.attendance = newBlessing.attendance;
+      primaryPayload.attendance = newBlessing.attendance;
     }
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('blessings')
-      .insert([insertPayload])
-      .select()
-      .single();
+      .insert([primaryPayload]);
+
+    // Fallback if table was created with (name, dua) columns instead
+    if (
+      error &&
+      (error.message?.includes('guest_name') ||
+        error.message?.includes('blessing_text') ||
+        error.message?.includes('schema cache'))
+    ) {
+      const fallbackPayload: Record<string, any> = {
+        name: newBlessing.name,
+        relation: newBlessing.relation,
+        dua: newBlessing.dua,
+      };
+      if (newBlessing.attendance) {
+        fallbackPayload.attendance = newBlessing.attendance;
+      }
+      const retry = await supabase.from('blessings').insert([fallbackPayload]);
+      if (!retry.error) {
+        data = retry.data;
+        error = null;
+      } else {
+        error = retry.error;
+      }
+    }
 
     if (error) {
-      console.warn('Supabase blessings insert warning:', error);
+      console.error("DATABASE INSERTION FAILED:", error.message, error.details, error.hint);
       return { success: false, error: error.message };
+    } else {
+      console.log("DATABASE INSERTION SUCCESS:", data);
+      return { success: true, data: newBlessing };
     }
-
-    return { success: true, data: data as BlessingRecord };
   } catch (err: any) {
     console.error('Supabase blessings exception:', err);
     return { success: false, error: err?.message || 'Failed to submit blessing' };
@@ -292,8 +315,17 @@ export const fetchRecentBlessings = async (limitCount: number = 3): Promise<{
       };
     }
 
+    const mapped: BlessingRecord[] = ((data as any[]) || []).map((r) => ({
+      id: r.id,
+      created_at: r.created_at,
+      name: r.guest_name || r.name || 'Well-wisher',
+      relation: r.relation || 'Guest',
+      attendance: r.attendance,
+      dua: r.blessing_text || r.dua || '',
+    }));
+
     return {
-      records: (data as BlessingRecord[]) || [],
+      records: mapped,
       isLive: true,
     };
   } catch (err: any) {
@@ -336,8 +368,17 @@ export const fetchAllBlessings = async (): Promise<{
       };
     }
 
+    const mapped: BlessingRecord[] = ((data as any[]) || []).map((r) => ({
+      id: r.id,
+      created_at: r.created_at,
+      name: r.guest_name || r.name || 'Well-wisher',
+      relation: r.relation || 'Guest',
+      attendance: r.attendance,
+      dua: r.blessing_text || r.dua || '',
+    }));
+
     return {
-      records: (data as BlessingRecord[]) || [],
+      records: mapped,
       isLive: true,
     };
   } catch (err: any) {
