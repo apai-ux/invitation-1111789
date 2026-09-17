@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarPlus, Check, Clock, Heart, Sparkles, Send, CheckCircle2, User, MessageSquare } from 'lucide-react';
+import { CalendarPlus, Check, Clock, Heart, Sparkles } from 'lucide-react';
 import { submitRSVP } from '../utils/supabaseClient';
 
 interface TimeLeft {
@@ -17,81 +17,23 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
   className = '',
   variant = 'details',
 }) => {
-  const [attendance, setAttendance] = useState<'yes' | 'no' | null>(() => {
-    try {
-      return (localStorage.getItem('wedding_rsvp_attendance') as 'yes' | 'no') || null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [guestName, setGuestName] = useState<string>(() => {
-    try {
-      return localStorage.getItem('wedding_guest_name') || '';
-    } catch {
-      return '';
-    }
-  });
-
-  const [guestWishes, setGuestWishes] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isConfirmed, setIsConfirmed] = useState<boolean>(() => {
-    try {
-      return Boolean(localStorage.getItem('wedding_rsvp_confirmed'));
-    } catch {
-      return false;
-    }
-  });
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
+  const [hasClickedInSession, setHasClickedInSession] = useState(false);
 
   const handleAttendanceSelect = (choice: 'yes' | 'no') => {
     setAttendance(choice);
+    setHasClickedInSession(true);
     try {
       localStorage.setItem('wedding_rsvp_attendance', choice);
     } catch {}
 
-    // If user has already entered their name, auto-save the RSVP
-    if (guestName.trim()) {
-      saveGuestRSVP(guestName.trim(), choice, guestWishes);
-    }
-  };
-
-  const saveGuestRSVP = async (name: string, choice: 'yes' | 'no', wishes?: string) => {
-    if (!name.trim()) return;
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      localStorage.setItem('wedding_guest_name', name.trim());
-      localStorage.setItem('wedding_rsvp_attendance', choice);
-      localStorage.setItem('wedding_rsvp_confirmed', 'true');
-    } catch {}
-
-    try {
-      const res = await submitRSVP({
-        name: name.trim(),
-        attendance: choice,
-        wishes: wishes || '',
-      });
-
-      if (res.success) {
-        setIsConfirmed(true);
-      } else if (res.error) {
-        setSubmitError(res.error);
-        setIsConfirmed(true); // Still treat as confirmed locally
-      }
-    } catch (err: any) {
+    // Immediately record submission without prompting the user
+    submitRSVP({
+      attendance: choice,
+      name: 'Anonymous RSVP',
+    }).catch((err) => {
       console.warn('RSVP submission note:', err);
-      setIsConfirmed(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleConfirmSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!attendance || !guestName.trim()) return;
-    saveGuestRSVP(guestName, attendance, guestWishes);
+    });
   };
 
   const [copiedCalendar, setCopiedCalendar] = useState(false);
@@ -294,159 +236,47 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
           </button>
         </div>
 
-        {/* Dynamic confirmation feedback and Name Collection */}
-        {attendance && !isConfirmed && (
-          <form
-            onSubmit={handleConfirmSubmit}
-            className="mt-4 p-4 sm:p-5 rounded-2xl bg-white/90 border border-amber-300 shadow-sm w-full max-w-lg animate-fadeIn text-left"
-          >
-            <div className="flex items-center gap-2 text-xs font-sans-ui text-amber-900 font-semibold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Complete Your RSVP</span>
-            </div>
-            <p className="text-xs text-stone-600 mb-3">
-              Please enter your name so Dr. Fathima &amp; Anas can record your response in their guestlist.
+        {/* Simple, elegant confirmation message - strictly only shown AFTER user clicks */}
+        {hasClickedInSession && (
+          <div className="mt-3.5 text-center animate-fadeIn">
+            <p className="text-xs sm:text-sm font-sans-ui text-[#7a1228] font-medium tracking-wide">
+              Thank you for your response!
             </p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] font-sans-ui text-stone-700 font-medium mb-1">
-                  Your Full Name / Family Name <span className="text-rose-600">*</span>
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
-                    placeholder="e.g. Dr. Rashid &amp; Family"
-                    className="w-full pl-9 pr-3.5 py-2 text-sm rounded-lg border border-amber-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 outline-none bg-amber-50/30 text-stone-900"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-sans-ui text-stone-700 font-medium mb-1">
-                  Optional Wedding Wish or Note
-                </label>
-                <div className="relative">
-                  <MessageSquare className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                  <textarea
-                    rows={2}
-                    value={guestWishes}
-                    onChange={(e) => setGuestWishes(e.target.value)}
-                    placeholder="e.g. Heartiest congratulations to Dr. Fathima &amp; Anas!"
-                    className="w-full pl-9 pr-3.5 py-2 text-sm rounded-lg border border-amber-300 focus:border-amber-600 outline-none bg-amber-50/30 text-stone-900 resize-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || !guestName.trim()}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#7a1228] to-[#912338] hover:from-[#5c0d1e] hover:to-[#7a1228] text-white text-sm font-sans-ui font-medium shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <span>Saving your RSVP...</span>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 text-amber-300" />
-                    <span>
-                      Confirm {attendance === 'yes' ? 'Attendance' : 'Response'}
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Confirmed State */}
-        {attendance && isConfirmed && (
-          <div className="mt-4 w-full max-w-lg animate-fadeIn">
-            {attendance === 'yes' ? (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 shadow-sm text-center">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <span className="font-semibold text-sm sm:text-base font-sans-ui">
-                    Alhamdulillah! RSVP Confirmed
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-emerald-800 font-sans-ui">
-                  Thank you, <strong>{guestName || 'dear guest'}</strong>! We are deeply honored and look forward to celebrating together on Sunday, 22 November 2026.
-                </p>
-                <div className="mt-3 flex items-center justify-center gap-3">
-                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium">
-                    <span>✓ Saved to Wedding Database</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirmed(false)}
-                    className="text-[11px] text-emerald-800 underline hover:text-emerald-950 cursor-pointer"
-                  >
-                    Edit response
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-2xl bg-rose-50/90 border border-rose-200 text-stone-800 shadow-sm text-center">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <Heart className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span className="font-medium text-sm font-sans-ui text-[#7a1228]">
-                    Response Received
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-stone-700 font-sans-ui">
-                  Thank you for letting us know, <strong>{guestName || 'dear guest'}</strong>. You will be dearly missed! Please keep the couple in your prayers.
-                </p>
-                <div className="mt-3 flex items-center justify-center gap-3">
-                  <span className="inline-flex items-center gap-1 text-[11px] text-stone-600 font-medium">
-                    <span>✓ Saved to Wedding Database</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirmed(false)}
-                    className="text-[11px] text-stone-700 underline hover:text-stone-900 cursor-pointer"
-                  >
-                    Edit response
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      {/* Calendar & Share Actions */}
-      <div className="mt-6 pt-5 border-t border-amber-300/60 flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={handleAddToCalendar}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-amber-100 text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
-        >
-          <CalendarPlus className="w-4 h-4 text-amber-300" />
-          <span>Add to Google Calendar</span>
-        </button>
+      {/* Calendar & Share Actions - Shown for guests who say yes (or initially) */}
+      {attendance !== 'no' && (
+        <div className="mt-6 pt-5 border-t border-amber-300/60 flex flex-wrap items-center justify-center gap-3 animate-fadeIn">
+          <button
+            type="button"
+            onClick={handleAddToCalendar}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-amber-100 text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+          >
+            <CalendarPlus className="w-4 h-4 text-amber-300" />
+            <span>Add to Google Calendar</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={handleDownloadICS}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-amber-600/50 bg-white/70 hover:bg-amber-50 text-[#7a1b2e] text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-sm active:scale-95 cursor-pointer"
-        >
-          {copiedCalendar ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-600" />
-              <span className="text-emerald-700">Downloaded to Calendar</span>
-            </>
-          ) : (
-            <>
-              <Heart className="w-4 h-4 text-[#7a1b2e]" />
-              <span>Apple / Outlook (.ics)</span>
-            </>
-          )}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={handleDownloadICS}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-amber-600/50 bg-white/70 hover:bg-amber-50 text-[#7a1b2e] text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-sm active:scale-95 cursor-pointer"
+          >
+            {copiedCalendar ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span className="text-emerald-700">Downloaded to Calendar</span>
+              </>
+            ) : (
+              <>
+                <Heart className="w-4 h-4 text-[#7a1b2e]" />
+                <span>Apple / Outlook (.ics)</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

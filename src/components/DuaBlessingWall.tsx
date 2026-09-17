@@ -1,43 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Send, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
-import { submitRSVP, fetchAllRSVPs } from '../utils/supabaseClient';
-
-interface Blessing {
-  id: string;
-  name: string;
-  relation: string;
-  dua: string;
-  arabic?: string;
-  time: string;
-  attendance?: string;
-}
-
-const INITIAL_BLESSINGS: Blessing[] = [
-  {
-    id: '1',
-    name: 'Family & Well-wishers',
-    relation: 'Family',
-    arabic: 'بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ',
-    dua: 'May Allah bless you both, shower His divine blessings upon you, and unite you both in goodness and everlasting harmony.',
-    time: 'Moments ago',
-  },
-  {
-    id: '2',
-    name: 'Uncle & Aunt',
-    relation: 'Elders',
-    arabic: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ',
-    dua: 'Heartfelt congratulations to dearest Fathima & Anas! May your union be filled with serenity, love, and immense barakah.',
-    time: 'Today',
-  },
-  {
-    id: '3',
-    name: 'College Friends',
-    relation: 'Friends',
-    arabic: 'مَا شَاءَ اللَّهُ تَبَارَكَ اللَّهُ',
-    dua: 'Wishing you a joyful journey filled with countless smiles, laughter, and companionship for this world and the hereafter!',
-    time: 'Today',
-  },
-];
+import {
+  submitBlessing,
+  fetchRecentBlessings,
+  BlessingRecord,
+} from '../utils/supabaseClient';
 
 const PRESET_DUAS = [
   'بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ (May Allah unite you in goodness)',
@@ -46,8 +13,25 @@ const PRESET_DUAS = [
   'Congratulations Dr. Fathima & Anas! Heartiest congratulations and duas from our family.',
 ];
 
+const formatTimestamp = (createdAt?: string) => {
+  if (!createdAt) return 'Recently';
+  try {
+    const d = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } catch {
+    return 'Recently';
+  }
+};
+
 export const DuaBlessingWall: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const [blessings, setBlessings] = useState<Blessing[]>(INITIAL_BLESSINGS);
+  const [blessings, setBlessings] = useState<BlessingRecord[]>([]);
   const [guestName, setGuestName] = useState(() => {
     try {
       return localStorage.getItem('wedding_guest_name') || '';
@@ -56,91 +40,64 @@ export const DuaBlessingWall: React.FC<{ className?: string }> = ({ className = 
     }
   });
   const [guestRelation, setGuestRelation] = useState('Friend');
-  const [attendanceChoice, setAttendanceChoice] = useState<'yes' | 'no'>(() => {
-    try {
-      return (localStorage.getItem('wedding_rsvp_attendance') as 'yes' | 'no') || 'yes';
-    } catch {
-      return 'yes';
-    }
-  });
   const [selectedDua, setSelectedDua] = useState(PRESET_DUAS[0]);
   const [customDua, setCustomDua] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingLive, setIsLoadingLive] = useState(false);
 
-  // Fetch live wishes from Supabase on mount
-  useEffect(() => {
-    loadLiveWishes();
-  }, []);
-
-  const loadLiveWishes = async () => {
+  // 1. Fetch live messages on load from Supabase 'blessings' table (ordered created_at desc, limit 3)
+  const loadRecentBlessings = async () => {
     setIsLoadingLive(true);
     try {
-      const res = await fetchAllRSVPs();
-      const recordsWithWishes = res.records.filter((r) => r.wishes && r.wishes.trim().length > 0);
-      if (recordsWithWishes.length > 0) {
-        const mapped: Blessing[] = recordsWithWishes.map((r, i) => ({
-          id: r.id || `live-${i}`,
-          name: r.name,
-          relation: r.relation || 'Guest',
-          dua: r.wishes || '',
-          attendance: r.attendance,
-          time: r.created_at
-            ? new Date(r.created_at).toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-              })
-            : 'Recently',
-        }));
-        // Merge live wishes with initial ones to keep it lively
-        setBlessings([...mapped, ...INITIAL_BLESSINGS]);
-      }
+      const res = await fetchRecentBlessings(3);
+      setBlessings(res.records);
     } catch (err) {
-      console.warn('Error loading live blessings:', err);
+      console.warn('Error loading live blessings from Supabase:', err);
     } finally {
       setIsLoadingLive(false);
     }
   };
 
+  useEffect(() => {
+    loadRecentBlessings();
+  }, []);
+
+  // 3. Optimize submission live reload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!guestName.trim()) return;
 
     const message = customDua.trim() ? customDua.trim() : selectedDua;
+    const submittedName = guestName.trim();
+    const submittedRelation = guestRelation;
+
     setIsSubmitting(true);
 
+    // Immediately clear the form fields
+    setGuestName('');
+    setCustomDua('');
+    setSelectedDua(PRESET_DUAS[0]);
+    setGuestRelation('Friend');
+
     try {
-      localStorage.setItem('wedding_guest_name', guestName.trim());
-      localStorage.setItem('wedding_rsvp_attendance', attendanceChoice);
-      localStorage.setItem('wedding_rsvp_confirmed', 'true');
+      localStorage.setItem('wedding_guest_name', submittedName);
     } catch {}
 
-    const newBlessing: Blessing = {
-      id: Date.now().toString(),
-      name: guestName.trim(),
-      relation: guestRelation,
-      dua: message,
-      attendance: attendanceChoice,
-      time: 'Just now',
-    };
-
-    setBlessings([newBlessing, ...blessings]);
-
-    // Save to Supabase
+    // Save to dedicated 'blessings' table in Supabase
     try {
-      await submitRSVP({
-        name: guestName.trim(),
-        relation: guestRelation,
-        attendance: attendanceChoice,
-        wishes: message,
+      await submitBlessing({
+        name: submittedName,
+        relation: submittedRelation,
+        dua: message,
       });
     } catch (err) {
-      console.warn('RSVP submission note:', err);
+      console.warn('Blessing submission note:', err);
     } finally {
       setIsSubmitting(false);
-      setCustomDua('');
       setSubmitted(true);
+      // Automatically trigger a re-fetch of the recent blessings list so their new prayer instantly jumps to the top of the feed
+      await loadRecentBlessings();
       setTimeout(() => setSubmitted(false), 5000);
     }
   };
@@ -206,36 +163,6 @@ export const DuaBlessingWall: React.FC<{ className?: string }> = ({ className = 
 
           <div>
             <label className="block text-xs font-sans-ui text-stone-700 font-medium mb-1">
-              Will you be attending?
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setAttendanceChoice('yes')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-sans-ui border transition-all cursor-pointer text-center ${
-                  attendanceChoice === 'yes'
-                    ? 'bg-[#7a1228] text-white border-[#7a1228] font-medium'
-                    : 'bg-amber-50/40 text-stone-700 border-amber-300 hover:bg-amber-100/50'
-                }`}
-              >
-                ✓ Attending with joy
-              </button>
-              <button
-                type="button"
-                onClick={() => setAttendanceChoice('no')}
-                className={`py-1.5 px-2 rounded-lg text-xs font-sans-ui border transition-all cursor-pointer text-center ${
-                  attendanceChoice === 'no'
-                    ? 'bg-[#c24b5a] text-white border-[#c24b5a] font-medium'
-                    : 'bg-amber-50/40 text-stone-700 border-amber-300 hover:bg-amber-100/50'
-                }`}
-              >
-                ✕ Wishing from afar
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-sans-ui text-stone-700 font-medium mb-1">
               Select or Type Dua
             </label>
             <select
@@ -287,9 +214,9 @@ export const DuaBlessingWall: React.FC<{ className?: string }> = ({ className = 
             <span>Recent Guestbook Blessings ({blessings.length})</span>
             <button
               type="button"
-              onClick={loadLiveWishes}
+              onClick={loadRecentBlessings}
               disabled={isLoadingLive}
-              className="inline-flex items-center gap-1 text-amber-800 hover:text-amber-950 cursor-pointer"
+              className="inline-flex items-center gap-1 text-amber-800 hover:text-amber-950 cursor-pointer disabled:opacity-50"
               title="Refresh blessings"
             >
               <RefreshCw className={`w-3 h-3 ${isLoadingLive ? 'animate-spin' : ''}`} />
@@ -297,43 +224,45 @@ export const DuaBlessingWall: React.FC<{ className?: string }> = ({ className = 
             </button>
           </div>
 
-          {blessings.map((b) => (
-            <div
-              key={b.id}
-              className="p-4 rounded-xl border border-amber-200/90 bg-white/70 shadow-sm relative hover:bg-white/95 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-display font-medium text-base text-[#7a1b2e]">
-                    {b.name}
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-sans-ui">
-                    {b.relation}
-                  </span>
-                  {b.attendance === 'yes' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-sans-ui font-medium">
-                      ✓ Attending
-                    </span>
-                  )}
-                </div>
-                <span className="text-[11px] text-stone-400 font-sans-ui">{b.time}</span>
-              </div>
-
-              {b.arabic && (
-                <div className="font-arabic text-sm text-amber-900 direction-rtl text-right my-1">
-                  {b.arabic}
-                </div>
-              )}
-
-              <p className="text-xs sm:text-sm text-stone-700 italic font-display leading-relaxed">
-                "{b.dua}"
+          {blessings.length === 0 ? (
+            <div className="p-6 rounded-xl border border-amber-200/60 bg-white/50 text-center">
+              <Sparkles className="w-5 h-5 text-amber-500/70 mx-auto mb-2" />
+              <p className="text-xs sm:text-sm text-stone-600 font-sans-ui">
+                {isLoadingLive
+                  ? 'Loading blessings from guestbook...'
+                  : 'No blessings posted yet. Be the first to share your prayers for Dr. Fathima & Anas!'}
               </p>
-
-              <div className="absolute top-2 right-2 opacity-20">
-                <Heart className="w-4 h-4 text-[#7a1b2e]" />
-              </div>
             </div>
-          ))}
+          ) : (
+            blessings.map((b, idx) => (
+              <div
+                key={b.id || idx}
+                className="p-4 rounded-xl border border-amber-200/90 bg-white/70 shadow-sm relative hover:bg-white/95 transition-colors"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-display font-medium text-base text-[#7a1b2e]">
+                      {b.name}
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-sans-ui font-medium">
+                      {b.relation || 'Guest'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-stone-400 font-sans-ui">
+                    {formatTimestamp(b.created_at)}
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-stone-700 italic font-display leading-relaxed">
+                  &ldquo;{b.dua}&rdquo;
+                </p>
+
+                <div className="absolute top-2 right-2 opacity-20">
+                  <Heart className="w-4 h-4 text-[#7a1b2e]" />
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
