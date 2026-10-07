@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarPlus, Check, Clock, Heart, Sparkles } from 'lucide-react';
+import { CalendarPlus, Clock, Sparkles, MapPin, ExternalLink } from 'lucide-react';
 import { submitRSVP } from '../utils/supabaseClient';
 
 interface TimeLeft {
@@ -46,7 +46,6 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
     }
   };
 
-  const [copiedCalendar, setCopiedCalendar] = useState(false);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -103,37 +102,6 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
     // 20261122T053000Z to 20261122T093000Z (approx 11:00 AM IST to 3:00 PM IST)
     const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261122T053000Z/20261122T093000Z&details=${details}&location=${location}`;
     window.open(gCalUrl, '_blank', 'noopener,noreferrer');
-    setCopiedCalendar(true);
-    setTimeout(() => setCopiedCalendar(false), 3000);
-  };
-
-  const handleDownloadICS = () => {
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Nikah Invitation//Fathima & Anas//EN',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      'BEGIN:VEVENT',
-      'SUMMARY:Nikah of Dr. Fathima Azis & Anas Kunjumuhammed',
-      'DESCRIPTION:Blessed Nikah ceremony. Venue directions: https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw',
-      'LOCATION:Venue (Scan/Click: https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw)',
-      'DTSTART:20261122T053000Z',
-      'DTEND:20261122T093000Z',
-      'STATUS:CONFIRMED',
-      'END:VEVENT',
-      'END:VCALENDAR',
-    ].join('\r\n');
-
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', 'Nikah-Fathima-and-Anas.ics');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setCopiedCalendar(true);
-    setTimeout(() => setCopiedCalendar(false), 3000);
   };
 
   const timeUnits = [
@@ -262,35 +230,28 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
         )}
       </div>
 
-      {/* Calendar & Share Actions - Shown for guests who say yes (or initially) */}
+      {/* Calendar & Venue Actions - Shown for guests who say yes (or initially) */}
       {attendance !== 'no' && (
         <div className="mt-6 pt-5 border-t border-amber-300/60 flex flex-wrap items-center justify-center gap-3 animate-fadeIn">
           <button
             type="button"
             onClick={handleAddToCalendar}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-amber-100 text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-amber-100 text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
           >
             <CalendarPlus className="w-4 h-4 text-amber-300" />
             <span>Add to Google Calendar</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleDownloadICS}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-amber-600/50 bg-white/70 hover:bg-amber-50 text-[#7a1b2e] text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-sm active:scale-95 cursor-pointer"
+          <a
+            href="https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-white text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
           >
-            {copiedCalendar ? (
-              <>
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span className="text-emerald-700">Downloaded to Calendar</span>
-              </>
-            ) : (
-              <>
-                <Heart className="w-4 h-4 text-[#7a1b2e]" />
-                <span>Apple / Outlook (.ics)</span>
-              </>
-            )}
-          </button>
+            <MapPin className="w-4 h-4 text-amber-300" />
+            <span>Open Venue in Google Maps</span>
+            <ExternalLink className="w-3.5 h-3.5 text-amber-200" />
+          </a>
         </div>
       )}
     </div>
