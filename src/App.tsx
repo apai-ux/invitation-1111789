@@ -5,7 +5,6 @@
 
 import React, { useMemo } from 'react';
 import {
-  ChevronDown,
   Sparkles,
   Heart,
 } from 'lucide-react';
@@ -195,16 +194,6 @@ export default function App() {
             </div>
           </div>
         </div>
-
-        {/* Smooth Downward Scroll Cue to Page 2 */}
-        <a
-          href="#countdown"
-          aria-label="Scroll to Ceremony Countdown and RSVP"
-          className="relative z-20 mt-8 mb-2 flex flex-col items-center gap-1 text-amber-300/80 hover:text-amber-200 transition-colors text-[11px] sm:text-xs font-sans-ui uppercase tracking-widest cursor-pointer"
-        >
-          <span>Ceremony Countdown &amp; RSVP</span>
-          <ChevronDown className="w-4 h-4 animate-bounce text-amber-300" />
-        </a>
       </section>
 
       {/* =========================================================================
