@@ -90,11 +90,13 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-11 gap-4 sm:gap-6 items-stretch">
               {/* Bride Card */}
               <div className="md:col-span-5 flex flex-col justify-between p-5 sm:p-7 rounded-2xl border border-amber-400/40 bg-gradient-to-b from-[#480814]/85 via-[#3d0610]/90 to-[#30040c]/95 shadow-2xl backdrop-blur-md text-center relative group h-full gold-foil-sheen">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold mb-2">
-                    <span>The Bride</span>
+                <div className="flex flex-col items-center w-full">
+                  <div className="flex justify-center w-full mb-2.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold">
+                      The Bride
+                    </span>
                   </div>
-                  <h2 className="font-script text-4xl sm:text-5xl lg:text-6xl gold-foil-text leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
+                  <h2 className="block w-full text-center font-script text-4xl sm:text-5xl lg:text-6xl gold-foil-text leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
                     Dr. Fathima Azis
                   </h2>
                 </div>
@@ -121,11 +123,13 @@ export default function App() {
 
               {/* Groom Card */}
               <div className="md:col-span-5 flex flex-col justify-between p-5 sm:p-7 rounded-2xl border border-amber-400/40 bg-gradient-to-b from-[#480814]/85 via-[#3d0610]/90 to-[#30040c]/95 shadow-2xl backdrop-blur-md text-center relative group h-full gold-foil-sheen">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold mb-2">
-                    <span>The Groom</span>
+                <div className="flex flex-col items-center w-full">
+                  <div className="flex justify-center w-full mb-2.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold">
+                      The Groom
+                    </span>
                   </div>
-                  <h2 className="font-script text-4xl sm:text-5xl lg:text-6xl gold-foil-text leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
+                  <h2 className="block w-full text-center font-script text-4xl sm:text-5xl lg:text-6xl gold-foil-text leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
                     Anas Kunjumuhammed
                   </h2>
                 </div>

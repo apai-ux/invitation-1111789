@@ -250,7 +250,9 @@
   -webkit-background-clip: text;
   background-clip: text;
   animation: goldFoilTextShimmer 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  display: inline-block;
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 

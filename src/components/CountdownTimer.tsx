@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarPlus, Clock, Sparkles, MapPin, ExternalLink } from 'lucide-react';
+import { CalendarPlus, Clock, Sparkles, MapPin, ExternalLink, QrCode } from 'lucide-react';
 import { submitRSVP } from '../utils/supabaseClient';
+import venueQrImg from '../assets/venue_qr.svg';
 
 interface TimeLeft {
   days: number;
@@ -232,26 +233,50 @@ export const CountdownTimer: React.FC<{ className?: string; variant?: 'hero' | '
 
       {/* Calendar & Venue Actions - Shown for guests who say yes (or initially) */}
       {attendance !== 'no' && (
-        <div className="mt-6 pt-5 border-t border-amber-300/60 flex flex-wrap items-center justify-center gap-3 animate-fadeIn">
-          <button
-            type="button"
-            onClick={handleAddToCalendar}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-amber-100 text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
-          >
-            <CalendarPlus className="w-4 h-4 text-amber-300" />
-            <span>Add to Google Calendar</span>
-          </button>
+        <div className="mt-6 pt-5 border-t border-amber-300/60 flex flex-col items-center justify-center gap-4 animate-fadeIn">
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleAddToCalendar}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-amber-100 text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+            >
+              <CalendarPlus className="w-4 h-4 text-amber-300" />
+              <span>Add to Google Calendar</span>
+            </button>
 
-          <a
-            href="https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-white text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
-          >
-            <MapPin className="w-4 h-4 text-amber-300" />
-            <span>Open Venue in Google Maps</span>
-            <ExternalLink className="w-3.5 h-3.5 text-amber-200" />
-          </a>
+            <a
+              href="https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#7a1b2e] hover:bg-[#5e1423] text-white text-xs sm:text-sm font-sans-ui font-medium tracking-wide transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+            >
+              <MapPin className="w-4 h-4 text-amber-300" />
+              <span>Open Venue in Google Maps</span>
+              <ExternalLink className="w-3.5 h-3.5 text-amber-200" />
+            </a>
+          </div>
+
+          {/* Location QR Code */}
+          <div className="flex flex-col items-center justify-center pt-1">
+            <a
+              href="https://maps.app.goo.gl/wgw8x8VydkyYuAra8?g_st=aw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group p-2 sm:p-2.5 rounded-2xl bg-white border border-amber-300/90 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+              title="Scan or tap for Google Maps venue directions"
+            >
+              <img
+                src={venueQrImg}
+                alt="Venue Location QR Code"
+                className="w-24 h-24 sm:w-28 sm:h-28 object-contain rounded-lg"
+              />
+            </a>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-sans-ui text-amber-900/80 font-semibold tracking-wider uppercase mt-2">
+              <QrCode className="w-3.5 h-3.5 text-[#7a1b2e]" />
+              <span>Scan QR for Location</span>
+            </span>
+          </div>
         </div>
       )}
     </div>
