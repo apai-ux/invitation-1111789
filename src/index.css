@@ -173,3 +173,84 @@
   background-size: 32px 32px;
 }
 
+/* =========================================================================
+   GOLD FOIL LIGHT SWEEP ANIMATION
+   Smooth, elegant specular light sweep across gold foil every 4.5s
+   ========================================================================= */
+
+@keyframes goldFoilSweep {
+  0%, 10% {
+    transform: translateX(-160%) skewX(-25deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.7;
+  }
+  42% {
+    transform: translateX(260%) skewX(-25deg);
+    opacity: 0.7;
+  }
+  50%, 100% {
+    transform: translateX(260%) skewX(-25deg);
+    opacity: 0;
+  }
+}
+
+@keyframes goldFoilTextShimmer {
+  0%, 12% {
+    background-position: -250% 0;
+  }
+  45% {
+    background-position: 250% 0;
+  }
+  100% {
+    background-position: 250% 0;
+  }
+}
+
+/* Surface shimmer for cards & embossed frames */
+.gold-foil-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.gold-foil-sheen::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 235, 175, 0.03) 20%,
+    rgba(255, 245, 215, 0.28) 50%,
+    rgba(255, 230, 150, 0.08) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: goldFoilSweep 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  z-index: 15;
+}
+
+/* Text shimmer for golden calligraphy */
+.gold-foil-text {
+  background: linear-gradient(
+    115deg,
+    #faebbe 0%,
+    #dfba6b 25%,
+    #ffffff 48%,
+    #fce7a8 52%,
+    #caa045 75%,
+    #faebbe 100%
+  );
+  background-size: 250% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: goldFoilTextShimmer 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  display: inline-block;
+}
+
+

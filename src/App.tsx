@@ -11,6 +11,7 @@ import {
 import { ArabesqueDivider } from './components/ArabesqueDivider';
 import { CountdownTimer } from './components/CountdownTimer';
 import { AudioPlayer } from './components/AudioPlayer';
+import { IslamicOrnamentCrest } from './components/IslamicOrnamentCrest';
 
 export default function App() {
   // Generate random static stars for the Arabic night sky
@@ -58,16 +59,19 @@ export default function App() {
           ))}
         </div>
 
-        {/* Radiant Celestial Moon with Warm Golden Halos (Preserved in Upper Sky) */}
-        <div className="absolute top-8 sm:top-12 right-6 sm:right-14 lg:right-24 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#fffdf3] via-[#faebbe] to-[#dfba6b] shadow-[0_0_60px_20px_rgba(251,210,110,0.38)] animate-float-gentle z-10 pointer-events-none">
-          <div className="absolute top-4 left-3 w-4 h-4 rounded-full bg-amber-950/15" />
-          <div className="absolute bottom-5 right-4 w-3 h-3 rounded-full bg-amber-950/10" />
-        </div>
+        {/* Main Arabic Red Royal Card Container */}
+        <div className="relative z-20 max-w-4xl w-full text-center my-auto px-4 py-8 sm:px-8 sm:py-10 rounded-3xl border border-amber-400/30 bg-gradient-to-b from-[#4a0814]/75 via-[#3d0610]/80 to-[#2c0409]/85 shadow-[0_12px_45px_rgba(0,0,0,0.5)] backdrop-blur-md">
+          {/* Ornate Islamic Gold Corner Accents */}
+          <div className="absolute top-2.5 left-2.5 w-6 h-6 border-t-2 border-l-2 border-amber-400/60" />
+          <div className="absolute top-2.5 right-2.5 w-6 h-6 border-t-2 border-r-2 border-amber-400/60" />
+          <div className="absolute bottom-2.5 left-2.5 w-6 h-6 border-b-2 border-l-2 border-amber-400/60" />
+          <div className="absolute bottom-2.5 right-2.5 w-6 h-6 border-b-2 border-r-2 border-amber-400/60" />
 
-        {/* Main Arabic Red Card Container */}
-        <div className="relative z-20 max-w-4xl w-full text-center my-auto">
+          {/* Elegant Royal Islamic Crest replacing the moon */}
+          <IslamicOrnamentCrest className="mb-2 sm:mb-3" />
+
           {/* Bismillah in Classical Arabic Calligraphy */}
-          <div className="font-arabic text-2xl sm:text-4xl text-[#faebbe] tracking-wide mb-1 leading-relaxed drop-shadow-[0_2px_14px_rgba(250,235,190,0.35)]">
+          <div className="font-arabic text-2xl sm:text-4xl gold-foil-text tracking-wide mb-1 leading-relaxed drop-shadow-[0_2px_14px_rgba(250,235,190,0.35)]">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </div>
           <p className="text-xs sm:text-sm text-amber-200/80 italic font-display tracking-wider mb-4">
@@ -83,26 +87,30 @@ export default function App() {
 
           {/* Bride & Groom with Parental Details (Arabic Red Theme Presentation) */}
           <div className="w-full max-w-3xl mx-auto my-2">
-            <div className="grid grid-cols-1 md:grid-cols-11 gap-4 sm:gap-6 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-11 gap-4 sm:gap-6 items-stretch">
               {/* Bride Card */}
-              <div className="md:col-span-5 p-5 sm:p-7 rounded-2xl border border-amber-400/40 bg-gradient-to-b from-[#480814]/85 via-[#3d0610]/90 to-[#30040c]/95 shadow-2xl backdrop-blur-md text-center relative group">
-                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold mb-2">
-                  <span>The Bride</span>
+              <div className="md:col-span-5 flex flex-col justify-between p-5 sm:p-7 rounded-2xl border border-amber-400/40 bg-gradient-to-b from-[#480814]/85 via-[#3d0610]/90 to-[#30040c]/95 shadow-2xl backdrop-blur-md text-center relative group h-full gold-foil-sheen">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold mb-2">
+                    <span>The Bride</span>
+                  </div>
+                  <h2 className="font-script text-4xl sm:text-5xl lg:text-6xl gold-foil-text leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
+                    Dr. Fathima Azis
+                  </h2>
                 </div>
-                <h2 className="font-script text-4xl sm:text-5xl lg:text-6xl text-[#fff5d6] leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
-                  Dr. Fathima Azis
-                </h2>
-                <div className="text-sm sm:text-base font-sans-ui text-amber-100 font-medium mt-2">
-                  D/o Azis NH &amp; Sainaba Azis
-                </div>
-                <div className="text-xs sm:text-sm text-amber-200/80 italic mt-2 leading-relaxed">
-                  Nellikkunnel (H), Vannappuram (P.O)<br />
-                  Vannappuram, Thodupuzha
+                <div>
+                  <div className="text-sm sm:text-base font-sans-ui text-amber-100 font-medium mt-2">
+                    D/o Azis NH &amp; Sainaba Azis
+                  </div>
+                  <div className="text-xs sm:text-sm text-amber-200/80 italic mt-2 leading-relaxed">
+                    Nellikkunnel (H), Vannappuram (P.O)<br />
+                    Vannappuram, Thodupuzha
+                  </div>
                 </div>
               </div>
 
               {/* Central Ampersand & Arabic Star */}
-              <div className="md:col-span-1 flex flex-col items-center justify-center my-1 md:my-0">
+              <div className="md:col-span-1 flex flex-col items-center justify-center my-2 md:my-0">
                 <div className="font-script text-5xl sm:text-6xl text-amber-300 leading-none drop-shadow-md">
                   &amp;
                 </div>
@@ -112,19 +120,23 @@ export default function App() {
               </div>
 
               {/* Groom Card */}
-              <div className="md:col-span-5 p-5 sm:p-7 rounded-2xl border border-amber-400/40 bg-gradient-to-b from-[#480814]/85 via-[#3d0610]/90 to-[#30040c]/95 shadow-2xl backdrop-blur-md text-center relative group">
-                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold mb-2">
-                  <span>The Groom</span>
+              <div className="md:col-span-5 flex flex-col justify-between p-5 sm:p-7 rounded-2xl border border-amber-400/40 bg-gradient-to-b from-[#480814]/85 via-[#3d0610]/90 to-[#30040c]/95 shadow-2xl backdrop-blur-md text-center relative group h-full gold-foil-sheen">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] sm:text-xs font-sans-ui uppercase tracking-widest font-semibold mb-2">
+                    <span>The Groom</span>
+                  </div>
+                  <h2 className="font-script text-4xl sm:text-5xl lg:text-6xl gold-foil-text leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
+                    Anas Kunjumuhammed
+                  </h2>
                 </div>
-                <h2 className="font-script text-4xl sm:text-5xl lg:text-6xl text-[#fff5d6] leading-tight my-1 drop-shadow-[0_2px_18px_rgba(250,225,140,0.35)]">
-                  Anas Kunjumuhammed
-                </h2>
-                <div className="text-sm sm:text-base font-sans-ui text-amber-100 font-medium mt-2">
-                  S/o Kunjumuhammed T P &amp; Mymoonath P M
-                </div>
-                <div className="text-xs sm:text-sm text-amber-200/80 italic mt-2 leading-relaxed">
-                  Thandakkala (H), Pattimattom (P.O)<br />
-                  Pattimattom, Ernakulam
+                <div>
+                  <div className="text-sm sm:text-base font-sans-ui text-amber-100 font-medium mt-2">
+                    S/o Kunjumuhammed T P &amp; Mymoonath P M
+                  </div>
+                  <div className="text-xs sm:text-sm text-amber-200/80 italic mt-2 leading-relaxed">
+                    Thandakkala (H), Pattimattom (P.O)<br />
+                    Pattimattom, Ernakulam
+                  </div>
                 </div>
               </div>
             </div>
