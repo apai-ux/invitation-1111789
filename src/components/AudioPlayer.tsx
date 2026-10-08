@@ -2,58 +2,87 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Music } from 'lucide-react';
 
 export const AudioPlayer: React.FC = () => {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const userPausedRef = useRef<boolean>(false);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.volume = 0.65;
+    // Always default to playing music on every website load or reload
+    userPausedRef.current = false;
 
-    // Attempt autoplay by default as requested
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          setIsPlaying(true);
-        })
-        .catch(() => {
-          // Autoplay was prevented by browser policy (requires user interaction)
-          setIsPlaying(false);
+    const startPlay = () => {
+      if (userPausedRef.current) return;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(() => {
+            // Autoplay blocked by browser policy until user interacts with the page
+          });
+      }
+    };
 
-          // Unlock audio on first user interaction anywhere on the page
-          const unlockAudio = () => {
-            if (audioRef.current && audioRef.current.paused) {
-              audioRef.current
-                .play()
-                .then(() => {
-                  setIsPlaying(true);
-                  setHasInteracted(true);
-                })
-                .catch(() => {});
-            }
-            window.removeEventListener('click', unlockAudio);
-            window.removeEventListener('touchstart', unlockAudio);
-            window.removeEventListener('scroll', unlockAudio);
-            window.removeEventListener('keydown', unlockAudio);
-          };
+    // Attempt playback immediately when the component mounts
+    startPlay();
 
-          window.addEventListener('click', unlockAudio, { once: true });
-          window.addEventListener('touchstart', unlockAudio, { once: true });
-          window.addEventListener('scroll', unlockAudio, { once: true });
-          window.addEventListener('keydown', unlockAudio, { once: true });
-        });
-    }
+    // In case the browser enforces user interaction before playing audio,
+    // immediately start playback on the first touch, click, scroll or keypress
+    const handleFirstInteraction = () => {
+      if (!userPausedRef.current) {
+        const promise = audio.play();
+        if (promise !== undefined) {
+          promise
+            .then(() => {
+              setIsPlaying(true);
+              removeListeners();
+            })
+            .catch(() => {});
+        }
+      }
+    };
 
-    // Auto-hide the initial tooltip after 5 seconds
+    const events = ['click', 'touchstart', 'touchend', 'pointerdown', 'scroll', 'keydown', 'wheel'];
+
+    const addListeners = () => {
+      events.forEach((evt) => {
+        window.addEventListener(evt, handleFirstInteraction, { passive: true, capture: true });
+      });
+    };
+
+    const removeListeners = () => {
+      events.forEach((evt) => {
+        window.removeEventListener(evt, handleFirstInteraction, { capture: true });
+      });
+    };
+
+    addListeners();
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => {
+      if (userPausedRef.current) {
+        setIsPlaying(false);
+      }
+    };
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+
+    // Auto-hide the initial song badge tooltip after 5 seconds
     const tooltipTimer = setTimeout(() => {
       setShowTooltip(false);
-    }, 6000);
+    }, 5000);
 
     return () => {
+      removeListeners();
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
       clearTimeout(tooltipTimer);
     };
   }, []);
@@ -62,10 +91,14 @@ export const AudioPlayer: React.FC = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (isPlaying) {
+    if (!audio.paused) {
+      // User explicitly paused: stop playback and do not restart on scroll/clicks
+      userPausedRef.current = true;
       audio.pause();
       setIsPlaying(false);
     } else {
+      // User explicitly resumed
+      userPausedRef.current = false;
       audio
         .play()
         .then(() => {
@@ -79,15 +112,17 @@ export const AudioPlayer: React.FC = () => {
 
   return (
     <>
-      {/* Hidden audio element pointing to the wedding nasheed */}
+      {/* Hidden audio element pointing to the wedding nasheed with autoplay hints */}
       <audio
         ref={audioRef}
         src="/aroosat_al_noor.mp3"
         loop
         preload="auto"
+        autoPlay
+        playsInline
       />
 
-      {/* Small floating sound control at top throughout the website */}
+      {/* Floating sound control button at top corner */}
       <div className="fixed top-4 right-4 sm:top-5 sm:right-6 z-50 flex items-center gap-2">
         {/* Subtle Song Pill Tooltip */}
         {showTooltip && (
@@ -106,8 +141,8 @@ export const AudioPlayer: React.FC = () => {
         <button
           type="button"
           onClick={toggleAudio}
-          aria-label={isPlaying ? 'Stop background music' : 'Play background music'}
-          title={isPlaying ? 'Stop background music (عروسة النور)' : 'Play background music (عروسة النور)'}
+          aria-label={isPlaying ? 'Pause background music' : 'Play background music'}
+          title={isPlaying ? 'Pause background music (عروسة النور)' : 'Play background music (عروسة النور)'}
           className={`relative group p-2.5 sm:p-3 rounded-full border backdrop-blur-md shadow-xl transition-all duration-300 active:scale-95 cursor-pointer flex items-center justify-center ${
             isPlaying
               ? 'bg-[#0e172e]/90 hover:bg-[#16213f] border-amber-400 text-amber-300 ring-2 ring-amber-400/40 shadow-amber-500/20'
